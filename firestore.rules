@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// What players' browsers may read directly. Every write, and every read of
+// anything not listed here (the name/user indexes, levels with their answers,
+// each team's full attempt history), goes through the SvelteKit server, whose
+// Admin SDK is not bound by these rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function myTeam() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.team;
+    }
+
+    // a player's own profile, and their teammates' (for the team page)
+    match /users/{userId} {
+      allow read: if request.auth != null
+        && (request.auth.uid == userId
+            || (resource.data.team != null && resource.data.team == myTeam()));
+    }
+
+    // a team, including its invite code, is visible to its members only
+    // (reading a team that doesn't exist reveals nothing, and happens briefly
+    // when a player leaves theirs)
+    match /teams/{teamId} {
+      allow read: if request.auth != null
+        && (resource == null || request.auth.uid in resource.data.members);
+    }
+
+    // a team's recent answers (the "prev answers" list)
+    match /logs/{teamId} {
+      allow read: if request.auth != null && myTeam() == teamId;
+    }
+  }
+}

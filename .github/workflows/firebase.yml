@@ -1,0 +1,53 @@
+# Pushes firestore.rules, firestore.indexes.json and your levels to your
+# Firebase project. Run it by hand: Actions -> Set up Firebase -> Run workflow.
+#
+# Repository secrets it needs (Settings -> Secrets and variables -> Actions):
+#   FIREBASE_SERVICE_ACCOUNT  the contents of the service account key file
+#   LEVELS_JSON               your levels, in the same format as seed/levels.json
+name: Set up Firebase
+
+on:
+  workflow_dispatch:
+    inputs:
+      levels:
+        description: Also upload the levels in the LEVELS_JSON secret
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  firebase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Use the service account
+        env:
+          SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SERVICE_ACCOUNT" ]; then
+            echo "::error::Add the FIREBASE_SERVICE_ACCOUNT repository secret first."
+            exit 1
+          fi
+          printf '%s' "$SERVICE_ACCOUNT" > "$RUNNER_TEMP/service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/service-account.json" >> "$GITHUB_ENV"
+          echo "PROJECT_ID=$(jq -r .project_id "$RUNNER_TEMP/service-account.json")" >> "$GITHUB_ENV"
+      - name: Deploy Firestore rules and indexes
+        run: npx firebase deploy --only firestore --project "$PROJECT_ID" --non-interactive
+      - name: Upload levels
+        if: inputs.levels
+        env:
+          LEVELS_JSON: ${{ secrets.LEVELS_JSON }}
+        run: |
+          if [ -z "$LEVELS_JSON" ]; then
+            echo "::error::Add the LEVELS_JSON repository secret, or run without uploading levels."
+            exit 1
+          fi
+          printf '%s' "$LEVELS_JSON" > "$RUNNER_TEMP/levels.json"
+          FB_PROJECT_ID="$PROJECT_ID" node scripts/upload-levels.js "$RUNNER_TEMP/levels.json"

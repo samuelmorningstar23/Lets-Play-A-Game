@@ -1,0 +1,42 @@
+[
+	{
+		"uid": "level-1",
+		"level": 0,
+		"creator": "game master",
+		"prompt": "\"the one piece is real!\" who shouted it to the world?",
+		"answer": "whitebeard",
+		"comment": " warm-up round. no tricks here. ",
+		"images": [],
+		"files": []
+	},
+	{
+		"uid": "level-2",
+		"level": 1,
+		"creator": "game master",
+		"prompt": "some secrets only show themselves to those who inspect.",
+		"answer": "viewsource",
+		"comment": " nice. the answer is: view source ",
+		"images": [],
+		"files": []
+	},
+	{
+		"uid": "level-3",
+		"level": 2,
+		"creator": "game master",
+		"prompt": "gavin belson would never admit it, but pied piper broke the charts on this score.",
+		"answer": "weissman",
+		"comment": " middle-out ",
+		"images": [],
+		"files": []
+	},
+	{
+		"uid": "level-4",
+		"level": 3,
+		"creator": "game master",
+		"prompt": "uryyb. v jnag gb cynl n tnzr. jub nz v?",
+		"answer": "jigsaw",
+		"comment": " thirteen steps back to the start ",
+		"images": [],
+		"files": []
+	}
+]
